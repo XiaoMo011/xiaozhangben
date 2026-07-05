@@ -1,0 +1,57 @@
+name: 构建 APK
+
+# 当推送代码到 main 分支时自动触发构建
+on:
+  push:
+    branches: [main, master]
+  # 也支持手动触发
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: 生成 Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # 2. 设置 Java 环境（Android 构建需要）
+      - name: 设置 Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. 安装 Flutter SDK
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.8'
+          channel: 'stable'
+
+      # 4. 生成 Android 平台文件
+      - name: 初始化 Android 平台
+        run: |
+          flutter create --platforms=android .
+          echo "Android 平台文件已生成"
+
+      # 5. 安装依赖包
+      - name: 安装依赖
+        run: flutter pub get
+
+      # 6. 构建 APK（release 版本）
+      - name: 构建 APK
+        run: flutter build apk --release --split-per-abi
+
+      # 7. 上传 APK 文件作为构建产物
+      - name: 上传 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: 小账本-APK
+          path: |
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+          retention-days: 30

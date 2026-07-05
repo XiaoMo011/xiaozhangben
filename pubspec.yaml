@@ -1,0 +1,27 @@
+name: xiaozhangben
+description: 小账本 - 个人记账App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # UI 图标
+  cupertino_icons: ^1.0.6
+  # 图表库 - 用于统计页面的饼图和柱状图
+  fl_chart: ^0.68.0
+  # 日期格式化
+  intl: ^0.19.0
+  # 注意：本地数据库方案待用户选择后添加
+  # sqflite / hive / objectbox 等方案对比后将由用户决定
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

@@ -251,6 +251,8 @@ Each decision records: date, what was decided, the options presented, and why.
 | 2026-07-05 | App名称 | 小账本 / 记账 / 随手记 / 我的账本 | 小账本 | 用户选择，亲切好记 |
 | 2026-07-05 | 技术栈 | Flutter / Kotlin原生 / React Native / PWA | Flutter | 用户选择，性能好且未来可扩展iPhone |
 | 2026-07-05 | 分类体系 | 12大类方案 | 保持不变 | 用户确认满意 |
+| 2026-07-05 | 安装方式 | winget自动安装 / 手动安装 | winget自动安装 | 用户选择，最简单快捷 |
+| 2026-07-05 | 环境清理 | - | 项目完成后清理 | 用户要求项目完成后卸载Flutter和Android Studio |
 
 ---
 
@@ -322,3 +324,5 @@ Each decision records: date, what was decided, the options presented, and why.
 - Font sizes should respect system settings
 - Color contrast should be sufficient for readability
 - Touch targets should be at least 48dp (Android accessibility guideline)
+
+# 要求全程使用中文

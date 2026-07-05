@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:\\\\Users\\\\31660\\\\Desktop\\\\code\\\\lib\\\\models\" \"c:\\\\Users\\\\31660\\\\Desktop\\\\code\\\\lib\\\\screens\" \"c:\\\\Users\\\\31660\\\\Desktop\\\\code\\\\lib\\\\data\" \"c:\\\\Users\\\\31660\\\\Desktop\\\\code\\\\lib\\\\widgets\" \"c:\\\\Users\\\\31660\\\\Desktop\\\\code\\\\assets\")",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\31660\\Desktop\\code\\lib"
+    ]
+  }
+}
