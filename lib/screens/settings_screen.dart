@@ -81,12 +81,25 @@ class SettingsScreen extends StatelessWidget {
                     title: const Text('关于小账本'),
                     subtitle: Text('版本 1.3.0', style: _subStyle(theme)),
                     shape: _tileShape(),
-                    onTap: () => showAboutDialog(
+                    onTap: () => showDialog(
                       context: context,
-                      applicationName: '小账本',
-                      applicationVersion: '1.3.0',
-                      applicationLegalese: '数据完全保存在您的设备上',
-                      children: [const Text('支持收支记录、预算管理、周期账单。\n多格式导入导出，轻松迁移数据。\n自定义背景，智能备注建议。')],
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('关于小账本'),
+                        content: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('版本 1.3.0', style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 12),
+                            Text('支持收支记录、预算管理、周期账单。\n多格式导入导出，轻松迁移数据。\n自定义背景，智能备注建议。'),
+                            SizedBox(height: 8),
+                            Text('数据完全保存在您的设备上，无需联网。', style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
