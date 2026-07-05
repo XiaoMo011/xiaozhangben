@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,15 +15,19 @@ class AppPreferences extends ChangeNotifier {
 
   // ---- 状态 ----
   String? _bgImagePath;
+  double _bgOpacity = 0.12; // 背景透明度，默认12%
   int _noteHistoryCount = 3;
   List<String> _presetNotes = [];
   int _presetNoteCount = 3;
+  int _defaultDateRange = 0; // 0=近7天 1=本周 2=本月 3=本年
 
   // ---- Getters ----
   String? get bgImagePath => _bgImagePath;
+  double get bgOpacity => _bgOpacity;
   int get noteHistoryCount => _noteHistoryCount;
   List<String> get presetNotes => _presetNotes;
   int get presetNoteCount => _presetNoteCount;
+  int get defaultDateRange => _defaultDateRange;
 
   /// 初始化
   Future<void> init() async {
@@ -31,17 +36,41 @@ class AppPreferences extends ChangeNotifier {
     _noteHistoryCount = _prefs!.getInt('note_history_count') ?? 3;
     _presetNotes = _prefs!.getStringList('preset_notes') ?? [];
     _presetNoteCount = _prefs!.getInt('preset_note_count') ?? 3;
+    _defaultDateRange = _prefs!.getInt('default_date_range') ?? 0;
+    _bgOpacity = _prefs!.getDouble('bg_opacity') ?? 0.12;
   }
 
   // ---- 背景图片 ----
   Future<void> pickBackgroundImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
-      source: ImageSource.gallery, maxWidth: 1080, maxHeight: 1920, imageQuality: 85);
+      source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1920, imageQuality: 90);
     if (picked == null) return;
+
+    // 裁剪图片以适配手机屏幕比例
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      aspectRatio: const CropAspectRatio(ratioX: 9, ratioY: 19.5),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: '裁剪背景',
+          toolbarColor: Colors.green.shade700,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+          hideBottomControls: false,
+        ),
+      ],
+    );
+
+    final sourcePath = cropped?.path ?? picked.path;
+
+    // 删除旧背景防止堆叠
+    if (_bgImagePath != null) {
+      try { await File(_bgImagePath!).delete(); } catch (_) {}
+    }
     final dir = await getApplicationDocumentsDirectory();
     final destPath = '${dir.path}/bg_image.jpg';
-    await File(picked.path).copy(destPath);
+    await File(sourcePath).copy(destPath);
     _bgImagePath = destPath;
     await _prefs!.setString('bg_image_path', destPath);
     notifyListeners();
@@ -56,6 +85,20 @@ class AppPreferences extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- 默认日期范围 ----
+  Future<void> setDefaultDateRange(int range) async {
+    _defaultDateRange = range.clamp(0, 3);
+    await _prefs!.setInt('default_date_range', _defaultDateRange);
+    notifyListeners();
+  }
+
+  // ---- 背景透明度 ----
+  Future<void> setBgOpacity(double opacity) async {
+    _bgOpacity = opacity.clamp(0.03, 0.50);
+    await _prefs!.setDouble('bg_opacity', _bgOpacity);
+    notifyListeners();
+  }
+
   // ---- 备注历史数量 ----
   Future<void> setNoteHistoryCount(int count) async {
     _noteHistoryCount = count.clamp(0, 10);
@@ -64,9 +107,7 @@ class AppPreferences extends ChangeNotifier {
   }
 
   // ---- 固化备注 ----
-  /// 在数量上限内可编辑的预设备注列表
   List<String> get editablePresetNotes {
-    // 保证列表长度 = presetNoteCount（不足补空字符串）
     final list = List<String>.from(_presetNotes);
     while (list.length < _presetNoteCount) { list.add(''); }
     if (list.length > _presetNoteCount) {
@@ -85,12 +126,9 @@ class AppPreferences extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 更新单个固化备注（按索引）
   Future<void> updatePresetNote(int index, String value) async {
-    // 确保列表足够长
     while (_presetNotes.length <= index) { _presetNotes.add(''); }
     _presetNotes[index] = value.trim();
-    // 移除尾部空字符串
     while (_presetNotes.isNotEmpty && _presetNotes.last.isEmpty) {
       _presetNotes.removeLast();
     }

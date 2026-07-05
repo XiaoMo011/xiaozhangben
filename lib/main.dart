@@ -187,7 +187,7 @@ class _MainScreenState extends State<MainScreen> {
     if (bgPath != null && File(bgPath).existsSync()) {
       return Positioned.fill(
         child: Opacity(
-          opacity: 0.10,
+          opacity: appPrefs.bgOpacity,
           child: Image.file(File(bgPath), fit: BoxFit.cover),
         ),
       );
