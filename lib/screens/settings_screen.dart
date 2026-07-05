@@ -485,7 +485,7 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _exportXlsx(BuildContext context) async {
     try { _loading(context, '生成 Excel...');
       final ex = excel.Excel.createExcel(); final s = ex['小账本'];
-      final hdr = excel.CellStyle(bold: true, fontSize: 12, fontColorHex: '#FFFFFF', backgroundColorHex: '#2E7D32',
+      final hdr = excel.CellStyle(bold: true, fontSize: 12,
           horizontalAlign: excel.HorizontalAlign.Center, verticalAlign: excel.VerticalAlign.Center,
           topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), bottomBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
           leftBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), rightBorder: excel.Border(borderStyle: excel.BorderStyle.Thin));
@@ -493,7 +493,7 @@ class SettingsScreen extends StatelessWidget {
           topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), bottomBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
           leftBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), rightBorder: excel.Border(borderStyle: excel.BorderStyle.Thin));
       final amt = excel.CellStyle(fontSize: 11, horizontalAlign: excel.HorizontalAlign.Right, verticalAlign: excel.VerticalAlign.Center,
-          numberFormat: '#,##0.00', topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
+          topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
           bottomBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
           leftBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), rightBorder: excel.Border(borderStyle: excel.BorderStyle.Thin));
       const hh = ['序号', '类型', '日期', '大类', '小类', '支付方式', '金额(¥)', '备注'];
