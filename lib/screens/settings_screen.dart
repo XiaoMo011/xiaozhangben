@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../data/categories.dart';
 import '../data/app_state.dart';
+import '../models/expense.dart';
 import '../data/preferences.dart';
 import '../data/note_history.dart';
 
