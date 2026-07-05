@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
-import 'package:excel/excel.dart' hide Border, BorderStyle;
+import "package:excel/excel.dart" as excel;
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -484,23 +484,23 @@ class SettingsScreen extends StatelessWidget {
   // --- 导出实现 ---
   Future<void> _exportXlsx(BuildContext context) async {
     try { _loading(context, '生成 Excel...');
-      final ex = Excel.createExcel(); final s = ex['小账本'];
-      final hdr = CellStyle(bold: true, fontSize: 12, fontColorHex: '#FFFFFF', backgroundColorHex: '#2E7D32',
-          horizontalAlign: HorizontalAlign.Center, verticalAlign: VerticalAlign.Center,
-          topBorder: Border(borderStyle: BorderStyle.Thin), bottomBorder: Border(borderStyle: BorderStyle.Thin),
-          leftBorder: Border(borderStyle: BorderStyle.Thin), rightBorder: Border(borderStyle: BorderStyle.Thin));
-      final cs = CellStyle(fontSize: 11, horizontalAlign: HorizontalAlign.Center, verticalAlign: VerticalAlign.Center,
-          topBorder: Border(borderStyle: BorderStyle.Thin), bottomBorder: Border(borderStyle: BorderStyle.Thin),
-          leftBorder: Border(borderStyle: BorderStyle.Thin), rightBorder: Border(borderStyle: BorderStyle.Thin));
-      final amt = CellStyle(fontSize: 11, horizontalAlign: HorizontalAlign.Right, verticalAlign: VerticalAlign.Center,
-          numberFormat: '#,##0.00', topBorder: Border(borderStyle: BorderStyle.Thin),
-          bottomBorder: Border(borderStyle: BorderStyle.Thin),
-          leftBorder: Border(borderStyle: BorderStyle.Thin), rightBorder: Border(borderStyle: BorderStyle.Thin));
+      final ex = excel.Excel.createExcel(); final s = ex['小账本'];
+      final hdr = excel.CellStyle(bold: true, fontSize: 12, fontColorHex: '#FFFFFF', backgroundColorHex: '#2E7D32',
+          horizontalAlign: excel.HorizontalAlign.Center, verticalAlign: excel.VerticalAlign.Center,
+          topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), bottomBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
+          leftBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), rightBorder: excel.Border(borderStyle: excel.BorderStyle.Thin));
+      final cs = excel.CellStyle(fontSize: 11, horizontalAlign: excel.HorizontalAlign.Center, verticalAlign: excel.VerticalAlign.Center,
+          topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), bottomBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
+          leftBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), rightBorder: excel.Border(borderStyle: excel.BorderStyle.Thin));
+      final amt = excel.CellStyle(fontSize: 11, horizontalAlign: excel.HorizontalAlign.Right, verticalAlign: excel.VerticalAlign.Center,
+          numberFormat: '#,##0.00', topBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
+          bottomBorder: excel.Border(borderStyle: excel.BorderStyle.Thin),
+          leftBorder: excel.Border(borderStyle: excel.BorderStyle.Thin), rightBorder: excel.Border(borderStyle: excel.BorderStyle.Thin));
       const hh = ['序号', '类型', '日期', '大类', '小类', '支付方式', '金额(¥)', '备注'];
-      for (var i = 0; i < hh.length; i++) { final c = s.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0)); c.value = TextCellValue(hh[i]); c.cellStyle = hdr; }
+      for (var i = 0; i < hh.length; i++) { final c = s.cell(excel.CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0)); c.value = excel.TextCellValue(hh[i]); c.cellStyle = hdr; }
       final exps = appState.expenses;
       for (var i = 0; i < exps.length; i++) { final e = exps[i]; final r = i + 1;
-        void w(int col, dynamic v, CellStyle st) { final c = s.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: r)); if (v is int) c.value = IntCellValue(v); else if (v is double) c.value = DoubleCellValue(v); else c.value = TextCellValue(v.toString()); c.cellStyle = st; }
+        void w(int col, dynamic v, excel.CellStyle st) { final c = s.cell(excel.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: r)); if (v is int) c.value = excel.IntCellValue(v); else if (v is double) c.value = excel.DoubleCellValue(v); else c.value = excel.TextCellValue(v.toString()); c.cellStyle = st; }
         w(0, i + 1, cs); w(1, e.type == 'expense' ? '支出' : '收入', cs); w(2, DateFormat('yyyy-MM-dd HH:mm').format(e.date), cs); w(3, e.majorCategory, cs); w(4, e.minorCategory, cs); w(5, e.paymentMethod, cs); w(6, e.amount, amt); w(7, e.note ?? '', cs);
       }
       s.setColumnWidth(0, 6); s.setColumnWidth(1, 8); s.setColumnWidth(2, 20); s.setColumnWidth(3, 14); s.setColumnWidth(4, 14); s.setColumnWidth(5, 10); s.setColumnWidth(6, 14); s.setColumnWidth(7, 28);
