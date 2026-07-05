@@ -26,11 +26,27 @@ jobs:
           flutter-version: '3.27.4'
           channel: 'stable'
 
+      - name: 备份自定义 Android 文件
+        run: |
+          mkdir -p /tmp/android_backup
+          cp android/app/src/main/AndroidManifest.xml /tmp/android_backup/ 2>/dev/null || true
+          cp android/app/build.gradle /tmp/android_backup/ 2>/dev/null || true
+          cp android/build.gradle /tmp/android_backup/ 2>/dev/null || true
+          cp android/settings.gradle /tmp/android_backup/ 2>/dev/null || true
+
+      - name: 生成 Android 平台文件
+        run: flutter create --platforms=android .
+
+      - name: 还原自定义 Android 文件
+        run: |
+          cp /tmp/android_backup/AndroidManifest.xml android/app/src/main/ 2>/dev/null || true
+          cp /tmp/android_backup/build.gradle android/app/ 2>/dev/null || true
+
       - name: 安装依赖
         run: flutter pub get
 
-      - name: 构建 APK (split per ABI)
-        run: flutter build apk --release --split-per-abi
+      - name: 构建 APK
+        run: flutter build apk --release --split-per-abi --no-tree-shake-icons
 
       - name: 上传 APK
         uses: actions/upload-artifact@v4
