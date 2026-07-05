@@ -161,7 +161,7 @@ class SettingsScreen extends StatelessWidget {
             )
           : const Icon(Icons.chevron_right, size: 20),
       shape: _tileShape(),
-      onTap: hasBg ? null : () async {
+      onTap: () async {
         await appPrefs.pickBackgroundImage();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

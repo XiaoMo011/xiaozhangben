@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../data/app_state.dart';
@@ -31,65 +30,29 @@ class _HomeScreenState extends State<HomeScreen> {
             listenable: appState,
             builder: (context, _) {
               final recent = appState.expenses.take(5).toList();
-              return Stack(
-                children: [
-                  // 背景图片层
-                  _buildBackground(theme),
-                  // 内容层
-                  SafeArea(
-                    child: Column(children: [
-                      if (recent.isEmpty && appState.expenses.isEmpty)
-                        Expanded(child: _buildEmptyState(theme))
-                      else
-                        Expanded(child: CustomScrollView(slivers: [
-                          SliverToBoxAdapter(child: _buildTodayCard(theme)),
-                          SliverToBoxAdapter(child: _buildMonthRow(theme)),
-                          SliverToBoxAdapter(child: _buildAddButton(theme)),
-                          if (recent.isNotEmpty) ...[
-                            SliverToBoxAdapter(child: _buildSectionTitle(theme)),
-                            SliverList(delegate: SliverChildBuilderDelegate(
-                              (context, i) => _buildItem(recent[i], theme),
-                              childCount: recent.length,
-                            )),
-                          ],
-                          const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                        ])),
-                    ]),
-                  ),
-                ],
+              return SafeArea(
+                child: Column(children: [
+                  if (recent.isEmpty && appState.expenses.isEmpty)
+                    Expanded(child: _buildEmptyState(theme))
+                  else
+                    Expanded(child: CustomScrollView(slivers: [
+                      SliverToBoxAdapter(child: _buildTodayCard(theme)),
+                      SliverToBoxAdapter(child: _buildMonthRow(theme)),
+                      SliverToBoxAdapter(child: _buildAddButton(theme)),
+                      if (recent.isNotEmpty) ...[
+                        SliverToBoxAdapter(child: _buildSectionTitle(theme)),
+                        SliverList(delegate: SliverChildBuilderDelegate(
+                          (context, i) => _buildItem(recent[i], theme),
+                          childCount: recent.length,
+                        )),
+                      ],
+                      const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                    ])),
+                ]),
               );
             },
           );
         },
-      ),
-    );
-  }
-
-  // ---- 背景 ----
-  Widget _buildBackground(ThemeData theme) {
-    final bgPath = appPrefs.bgImagePath;
-    if (bgPath != null && File(bgPath).existsSync()) {
-      return Positioned.fill(
-        child: Opacity(
-          opacity: 0.06,
-          child: Image.file(File(bgPath), fit: BoxFit.cover),
-        ),
-      );
-    }
-    // 默认渐变背景（通透微弱渐变）
-    return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              theme.colorScheme.primaryContainer.withOpacity(0.08),
-              Colors.transparent,
-            ],
-            stops: const [0.0, 0.4],
-          ),
-        ),
       ),
     );
   }

@@ -12,9 +12,11 @@ class StatisticsScreen extends StatefulWidget {
 }
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
-  int _selectedPeriod = 0; // 0=本月 1=上月 2=本年
+  int _selectedPeriod = 0; // 0=本月 1=上月 2=本年 3=自定义月份
   int _selectedChart = 0; // 0=饼图 1=柱状图 2=趋势
   String _selectedType = 'expense'; // 'expense' 或 'income'
+  int _customYear = DateTime.now().year;
+  int _customMonth = DateTime.now().month;
   Color _bgColor = const Color(0xFF1E293B);
   double _bgOpacity = 0.08;
 
@@ -40,6 +42,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final m = now.month == 1 ? 12 : now.month - 1;
         return DateTime(now.month == 1 ? now.year - 1 : now.year, m, 1);
       case 2: return DateTime(now.year, 1, 1);
+      case 3: return DateTime(_customYear, _customMonth, 1);
       default: return DateTime(now.year, now.month, 1);
     }
   }
@@ -53,6 +56,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final y = now.month == 1 ? now.year - 1 : now.year;
         return _endOfMonth(y, m);
       case 2: return DateTime(now.year, 12, 31);
+      case 3: return _endOfMonth(_customYear, _customMonth);
       default: return now;
     }
   }
@@ -68,6 +72,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       case 0: return '本月';
       case 1: return '上月';
       case 2: return '本年';
+      case 3: return '$_customYear年$_customMonth月';
       default: return '';
     }
   }
@@ -176,14 +181,110 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildPeriodSelector(ThemeData theme) {
-    return SegmentedButton<int>(
-      segments: const [
-        ButtonSegment(value: 0, label: Text('本月')),
-        ButtonSegment(value: 1, label: Text('上月')),
-        ButtonSegment(value: 2, label: Text('本年')),
+    return Column(
+      children: [
+        SegmentedButton<int>(
+          segments: const [
+            ButtonSegment(value: 0, label: Text('本月')),
+            ButtonSegment(value: 1, label: Text('上月')),
+            ButtonSegment(value: 2, label: Text('本年')),
+            ButtonSegment(value: 3, label: Text('自选')),
+          ],
+          selected: {_selectedPeriod},
+          onSelectionChanged: (v) => setState(() => _selectedPeriod = v.first),
+        ),
+        if (_selectedPeriod == 3) ...[
+          const SizedBox(height: 12),
+          // 年份+月份选择器
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // 年份左箭头
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 22),
+                  onPressed: () => setState(() => _customYear--),
+                ),
+                // 年份显示
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await showDialog<int>(
+                      context: context,
+                      builder: (ctx) => SimpleDialog(
+                        title: const Text('选择年份'),
+                        children: List.generate(10, (i) {
+                          final y = DateTime.now().year - 5 + i;
+                          return SimpleDialogOption(
+                            onPressed: () => Navigator.pop(ctx, y),
+                            child: Text('$y 年', style: TextStyle(
+                              fontWeight: _customYear == y ? FontWeight.bold : FontWeight.normal,
+                              color: _customYear == y ? theme.colorScheme.primary : null,
+                            )),
+                          );
+                        }),
+                      ),
+                    );
+                    if (picked != null) setState(() => _customYear = picked);
+                  },
+                  child: Text('$_customYear 年',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ),
+                // 年份右箭头
+                IconButton(
+                  icon: const Icon(Icons.chevron_right, size: 22),
+                  onPressed: () => setState(() => _customYear++),
+                ),
+                const SizedBox(width: 16),
+                // 月份左箭头
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 22),
+                  onPressed: () => setState(() {
+                    if (_customMonth == 1) { _customMonth = 12; _customYear--; }
+                    else _customMonth--;
+                  }),
+                ),
+                // 月份显示
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await showDialog<int>(
+                      context: context,
+                      builder: (ctx) => SimpleDialog(
+                        title: const Text('选择月份'),
+                        children: List.generate(12, (i) {
+                          final m = i + 1;
+                          return SimpleDialogOption(
+                            onPressed: () => Navigator.pop(ctx, m),
+                            child: Text('$m 月', style: TextStyle(
+                              fontWeight: _customMonth == m ? FontWeight.bold : FontWeight.normal,
+                              color: _customMonth == m ? theme.colorScheme.primary : null,
+                            )),
+                          );
+                        }),
+                      ),
+                    );
+                    if (picked != null) setState(() => _customMonth = picked);
+                  },
+                  child: Text('$_customMonth 月',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ),
+                // 月份右箭头
+                IconButton(
+                  icon: const Icon(Icons.chevron_right, size: 22),
+                  onPressed: () => setState(() {
+                    if (_customMonth == 12) { _customMonth = 1; _customYear++; }
+                    else _customMonth++;
+                  }),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
-      selected: {_selectedPeriod},
-      onSelectionChanged: (v) => setState(() => _selectedPeriod = v.first),
     );
   }
 
