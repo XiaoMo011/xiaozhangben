@@ -167,7 +167,7 @@ class _MainScreenState extends State<MainScreen> {
                 destinations: const [
                   NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: '首页'),
                   NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: '明细'),
-                  NavigationDestination(icon: Icon(Icons.pie_chart_outlined), selectedIcon: Icon(Icons.pie_chart), label: '统计'),
+                  NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: '统计'),
                   NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: '我的'),
                 ],
               ),
