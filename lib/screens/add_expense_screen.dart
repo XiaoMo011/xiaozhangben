@@ -340,21 +340,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _sectionLabel(theme, '备注'),
       const SizedBox(height: 10),
-      TextField(
-        controller: _noteController,
-        focusNode: _noteFocusNode,
-        keyboardType: TextInputType.text,
-        maxLength: 200,
-        onChanged: (_) => setState(() => _showSuggestions = false),
-        decoration: InputDecoration(
-          hintText: '添加备注...',
-          filled: true,
-          fillColor: theme.colorScheme.surfaceContainerLow,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade200)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade200)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.5)),
-          contentPadding: const EdgeInsets.all(16),
-          counterStyle: TextStyle(color: Colors.grey.shade400),
+      GestureDetector(
+        onLongPress: presets.isNotEmpty
+            ? () => _showPresetPicker(context, presets, theme)
+            : null,
+        child: TextField(
+          controller: _noteController,
+          focusNode: _noteFocusNode,
+          keyboardType: TextInputType.text,
+          maxLength: 200,
+          onChanged: (_) => setState(() => _showSuggestions = false),
+          decoration: InputDecoration(
+            hintText: presets.isNotEmpty ? '添加备注...（长按选固化备注）' : '添加备注...',
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainerLow,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade200)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade200)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.5)),
+            contentPadding: const EdgeInsets.all(16),
+            counterStyle: TextStyle(color: Colors.grey.shade400),
+          ),
         ),
       ),
       // ---- 固化备注（始终显示） ----
@@ -405,6 +410,67 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         )).toList()),
       ],
     ]);
+  }
+
+  /// 长按备注输入框时弹出固化备注选择器
+  void _showPresetPicker(BuildContext context, List<String> presets, ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.push_pin, color: theme.colorScheme.primary, size: 22),
+                const SizedBox(width: 8),
+                Text('固化备注', style: theme.textTheme.titleLarge),
+              ]),
+              const SizedBox(height: 6),
+              Text('点击直接填入备注', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline)),
+              const SizedBox(height: 16),
+              ...presets.map((n) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _noteController.text = n;
+                      Navigator.pop(ctx);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.3)),
+                    ),
+                    child: Row(children: [
+                      Icon(Icons.push_pin, size: 18, color: theme.colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(n, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.left),
+                      ),
+                      Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
+                    ]),
+                  ),
+                ),
+              )),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('取消'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _sectionLabel(ThemeData theme, String text) {
