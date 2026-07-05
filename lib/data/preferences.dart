@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,31 +45,13 @@ class AppPreferences extends ChangeNotifier {
     final picked = await picker.pickImage(
       source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1920, imageQuality: 90);
     if (picked == null) return;
-
-    // 裁剪图片以适配手机屏幕比例
-    final cropped = await ImageCropper().cropImage(
-      sourcePath: picked.path,
-      aspectRatio: const CropAspectRatio(ratioX: 9, ratioY: 19.5),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: '裁剪背景',
-          toolbarColor: Colors.green.shade700,
-          toolbarWidgetColor: Colors.white,
-          lockAspectRatio: true,
-          hideBottomControls: false,
-        ),
-      ],
-    );
-
-    final sourcePath = cropped?.path ?? picked.path;
-
     // 删除旧背景防止堆叠
     if (_bgImagePath != null) {
       try { await File(_bgImagePath!).delete(); } catch (_) {}
     }
     final dir = await getApplicationDocumentsDirectory();
     final destPath = '${dir.path}/bg_image.jpg';
-    await File(sourcePath).copy(destPath);
+    await File(picked.path).copy(destPath);
     _bgImagePath = destPath;
     await _prefs!.setString('bg_image_path', destPath);
     notifyListeners();

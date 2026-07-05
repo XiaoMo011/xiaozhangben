@@ -11,9 +11,6 @@ import '../data/categories.dart';
 import '../data/app_state.dart';
 import '../data/preferences.dart';
 import '../data/note_history.dart';
-import '../models/budget.dart';
-import '../models/expense.dart';
-import '../models/recurring_template.dart';
 
 /// 我的 - 设置页面
 /// 所有自定义项统一在"自定义"下，只显示一级标题，其余折叠
@@ -255,54 +252,25 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ==================== 预算 ====================
+  // ==================== 预算（占位 - 后续版本） ====================
   Widget _budgetTile(BuildContext context, ThemeData theme) {
     return ListTile(
       leading: _icon(Icons.savings_outlined, theme),
       title: const Text('月度预算'),
-      subtitle: Text(appState.budget != null ? '${appState.budget!.categoryName}: ¥${appState.budget!.monthlyLimit.toStringAsFixed(0)}' : '未设置', style: _sub(theme)),
-      trailing: const Icon(Icons.chevron_right, size: 20),
+      subtitle: Text('后续版本推出', style: _sub(theme)),
       shape: _shape(),
-      onTap: () => _showBudgetDialog(context, theme),
+      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('预算功能将在后续版本推出'))),
     );
   }
 
-  void _showBudgetDialog(BuildContext context, ThemeData theme) {
-    final cats = [const Category(name: '全部支出', icon: ''), ...expenseCategories.map((c) => Category(name: c.name, icon: c.icon))];
-    String selCat = appState.budget?.categoryName ?? cats.first.name;
-    final ctrl = TextEditingController(text: appState.budget?.monthlyLimit.toStringAsFixed(0) ?? '');
-    showDialog(context: context, builder: (ctx) => StatefulBuilder(builder: (ctx, sS) => AlertDialog(
-      title: const Text('月度预算'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        DropdownButtonFormField<String>(
-          value: selCat,
-          items: cats.map((c) => DropdownMenuItem(value: c.name, child: Text(c.name))).toList(),
-          onChanged: (v) => sS(() => selCat = v!),
-          decoration: const InputDecoration(labelText: '分类'),
-        ),
-        const SizedBox(height: 12),
-        TextField(controller: ctrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: '月度预算 (¥)', prefixText: '¥ ')),
-      ]),
-      actions: [
-        if (appState.budget != null) TextButton(onPressed: () { appState.clearBudget(); Navigator.pop(ctx); }, child: const Text('删除预算', style: TextStyle(color: Colors.red))),
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-        FilledButton(onPressed: () {
-          final amt = double.tryParse(ctrl.text) ?? 0;
-          if (amt > 0) { appState.setBudget(selCat, amt); Navigator.pop(ctx); }
-        }, child: const Text('保存')),
-      ],
-    )));
-  }
-
-  // ==================== 周期 ====================
+  // ==================== 周期（占位 - 后续版本） ====================
   Widget _recurringTile(BuildContext context, ThemeData theme) {
     return ListTile(
       leading: _icon(Icons.repeat, theme),
       title: const Text('周期账单'),
-      subtitle: Text('${appState.recurringTemplates.length} 个模板', style: _sub(theme)),
-      trailing: const Icon(Icons.chevron_right, size: 20),
+      subtitle: Text('后续版本推出', style: _sub(theme)),
       shape: _shape(),
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringManageScreen())),
+      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('周期账单功能将在后续版本推出'))),
     );
   }
 
@@ -343,7 +311,7 @@ class SettingsScreen extends StatelessWidget {
       final file = File('${dir.path}/小账本_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv');
       await file.writeAsString(csvStr);
       if (context.mounted) {
-        await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+        await Share.shareXFiles([XFile(file.path)], text: '小账本数据导出');
       }
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('导出失败: $e')));
@@ -363,7 +331,7 @@ class SettingsScreen extends StatelessWidget {
       final file = File('${dir.path}/小账本_${DateFormat('yyyyMMdd').format(DateTime.now())}.xlsx');
       await file.writeAsBytes(xls.encode()!);
       if (context.mounted) {
-        await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+        await Share.shareXFiles([XFile(file.path)], text: '小账本数据导出');
       }
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('导出失败: $e')));
@@ -469,7 +437,7 @@ class SettingsScreen extends StatelessWidget {
         content: const Text('确定要清空所有数据吗？此操作不可撤销。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () { appState.clearAll(); Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已清空所有数据'))); },
+          FilledButton(onPressed: () { appState.expenses.toList().forEach((e) { final i = appState.expenses.indexOf(e); if (i >= 0) appState.deleteExpense(i); }); Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已清空所有数据'))); },
             style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error), child: const Text('确认清空')),
         ],
       )),
@@ -477,15 +445,30 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-// ==================== 占位页面引用（保持兼容） ====================
 class CategoryManageScreen extends StatelessWidget {
   const CategoryManageScreen({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('管理支出分类')), body: const Center(child: Text('分类管理')));
-}
-
-class RecurringManageScreen extends StatelessWidget {
-  const RecurringManageScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('周期账单')), body: const Center(child: Text('周期账单')));
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(title: const Text('管理支出分类'), backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: expenseCategories.length,
+        itemBuilder: (context, index) {
+          final major = expenseCategories[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ExpansionTile(
+              leading: Icon(Icons.folder, color: theme.colorScheme.primary),
+              title: Text(major.name, style: theme.textTheme.titleMedium),
+              subtitle: Text('${major.subCategories.length}个子分类'),
+              children: major.subCategories.map((sub) => ListTile(title: Text(sub.name), leading: const Icon(Icons.label_outline, size: 20), dense: true)).toList(),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

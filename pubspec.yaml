@@ -30,8 +30,8 @@ dependencies:
   csv: ^6.0.0
   # 图片选择器（自定义背景）
   image_picker: ^1.1.2
-  # 图片裁剪器
-  image_cropper: ^8.1.0
+  # 图片裁剪器（待兼容版本修复后启用）
+  # image_cropper: ^8.1.0
   # 持久化存储用户偏好
   shared_preferences: ^2.3.4
 
