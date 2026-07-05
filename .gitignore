@@ -37,3 +37,4 @@ Thumbs.db
 # Environment
 .env
 *.env.dart
+.claude/settings.local.json

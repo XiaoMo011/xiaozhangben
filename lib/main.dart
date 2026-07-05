@@ -28,7 +28,7 @@ class XiaoZhangBenApp extends StatelessWidget {
           centerTitle: true,
           elevation: 0,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -55,7 +55,7 @@ class XiaoZhangBenApp extends StatelessWidget {
           centerTitle: true,
           elevation: 0,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -113,7 +113,7 @@ class _MainScreenState extends State<MainScreen> {
             label: '明细',
           ),
           NavigationDestination(
-            icon: Icon(Icons.pie_chart_outlined),
+            icon: Icon(Icons.pie_chart),
             selectedIcon: Icon(Icons.pie_chart),
             label: '统计',
           ),

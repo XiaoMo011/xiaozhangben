@@ -103,7 +103,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.pie_chart_outlined,
+                  Icon(Icons.pie_chart,
                       size: 64, color: theme.colorScheme.outlineVariant),
                   const SizedBox(height: 16),
                   Text('${_periodLabel}暂无支出记录',
@@ -229,7 +229,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 ),
               ),
               const SizedBox(width: 10),
-              Text(catEntry.name, style: theme.textTheme.bodyMedium),
+              Text(catEntry.key, style: theme.textTheme.bodyMedium),
               const Spacer(),
               Text(
                 NumberFormat.currency(symbol: '¥', decimalDigits: 2)

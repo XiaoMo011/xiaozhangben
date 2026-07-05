@@ -16,8 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final todayTotal = expenseProvider.todayTotal;
-    final recentExpenses = expenseProvider.expenses.take(5).toList();
+    final todayTotal = appState.todayTotal;
+    final recentExpenses = appState.expenses.take(5).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -26,9 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
         foregroundColor: theme.colorScheme.onPrimaryContainer,
       ),
       body: ListenableBuilder(
-        listenable: expenseProvider,
+        listenable: appState,
         builder: (context, _) {
-          final recent = expenseProvider.expenses.take(5).toList();
+          final recent = appState.expenses.take(5).toList();
           return SafeArea(
             child: Column(
               children: [
@@ -104,9 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             Text(
               NumberFormat.currency(symbol: '¥', decimalDigits: 2)
-                  .format(expenseProvider.todayTotal),
+                  .format(appState.todayTotal),
               style: theme.textTheme.headlineLarge?.copyWith(
-                color: expenseProvider.todayTotal > 0
+                color: appState.todayTotal > 0
                     ? theme.colorScheme.error
                     : theme.colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              '本月累计 ${NumberFormat.currency(symbol: '¥', decimalDigits: 2).format(expenseProvider.thisMonthTotal)}',
+              '本月累计 ${NumberFormat.currency(symbol: '¥', decimalDigits: 2).format(appState.thisMonthTotal)}',
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.outline),
             ),
