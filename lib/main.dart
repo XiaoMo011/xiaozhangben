@@ -73,20 +73,22 @@ class XiaoZhangBenApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF7F8FA),
+        scaffoldBackgroundColor: const Color(0xFFF7F8FA).withOpacity(0.88),
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
           scrolledUnderElevation: 1,
           surfaceTintColor: Colors.transparent,
+          backgroundColor: Colors.transparent,
         ),
         cardTheme: CardThemeData(
-          elevation: 0.5,
-          shadowColor: Colors.black.withOpacity(0.04),
-          surfaceTintColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.white.withOpacity(0.72),
+          color: Colors.white.withOpacity(0.72),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade100, width: 0.5),
+            side: BorderSide(color: Colors.white.withOpacity(0.3), width: 0.5),
           ),
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         ),
@@ -102,7 +104,7 @@ class XiaoZhangBenApp extends StatelessWidget {
         ),
         navigationBarTheme: NavigationBarThemeData(
           elevation: 0,
-          backgroundColor: Colors.white.withOpacity(0.92),
+          backgroundColor: Colors.white.withOpacity(0.72),
           indicatorColor: const Color(0xFF2E7D32).withOpacity(0.12),
           surfaceTintColor: Colors.transparent,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -115,17 +117,19 @@ class XiaoZhangBenApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color(0xFF121212).withOpacity(0.88),
         cardTheme: CardThemeData(
           elevation: 0,
+          color: Colors.white.withOpacity(0.06),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade800, width: 0.5),
+            side: BorderSide(color: Colors.white.withOpacity(0.06), width: 0.5),
           ),
         ),
         navigationBarTheme: NavigationBarThemeData(
           elevation: 0,
           height: 64,
+          backgroundColor: const Color(0xFF121212).withOpacity(0.72),
           indicatorColor: const Color(0xFF4CAF50).withOpacity(0.15),
         ),
       ),
@@ -183,7 +187,7 @@ class _MainScreenState extends State<MainScreen> {
     if (bgPath != null && File(bgPath).existsSync()) {
       return Positioned.fill(
         child: Opacity(
-          opacity: 0.04,
+          opacity: 0.10,
           child: Image.file(File(bgPath), fit: BoxFit.cover),
         ),
       );

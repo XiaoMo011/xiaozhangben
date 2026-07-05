@@ -97,39 +97,51 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           final dailyTotals = appState.getDailyTotalsInRange(
               type: _selectedType, start: _startDate, end: _endDate);
           final total = catTotals.values.fold(0.0, (s, v) => s + v);
+          final hasData = total > 0;
 
-          if (total == 0) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.pie_chart, size: 64, color: theme.colorScheme.outlineVariant),
-                  const SizedBox(height: 16),
-                  Text('${_periodLabel}暂无${_selectedType == "expense" ? "支出" : "收入"}记录',
-                      style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.outline)),
-                ],
+          return Column(
+            children: [
+              // 选择器始终可见
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Column(children: [
+                  _buildTypeToggle(theme),
+                  const SizedBox(height: 10),
+                  _buildPeriodSelector(theme),
+                ]),
               ),
-            );
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // 类型切换
-                _buildTypeToggle(theme),
-                const SizedBox(height: 10),
-                _buildPeriodSelector(theme),
-                const SizedBox(height: 12),
-                _buildTotalCard(theme, total),
-                const SizedBox(height: 12),
-                _buildChartSelector(theme),
-                const SizedBox(height: 12),
-                _buildChartContainer(catTotals, dailyTotals, theme),
-                const SizedBox(height: 16),
-                _buildRanking(catTotals, total, theme),
-              ],
-            ),
+              const SizedBox(height: 12),
+              // 内容区
+              Expanded(
+                child: !hasData
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.pie_chart, size: 64,
+                                color: theme.colorScheme.outlineVariant),
+                            const SizedBox(height: 16),
+                            Text(
+                                '${_periodLabel}暂无${_selectedType == "expense" ? "支出" : "收入"}记录',
+                                style: theme.textTheme.bodyLarge
+                                    ?.copyWith(color: theme.colorScheme.outline)),
+                          ],
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        child: Column(children: [
+                          _buildTotalCard(theme, total),
+                          const SizedBox(height: 12),
+                          _buildChartSelector(theme),
+                          const SizedBox(height: 12),
+                          _buildChartContainer(catTotals, dailyTotals, theme),
+                          const SizedBox(height: 16),
+                          _buildRanking(catTotals, total, theme),
+                        ]),
+                      ),
+              ),
+            ],
           );
         },
       ),

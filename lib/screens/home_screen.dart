@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-    // 默认渐变背景
+    // 默认渐变背景（通透微弱渐变）
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
@@ -83,10 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              theme.colorScheme.primaryContainer.withOpacity(0.15),
-              theme.scaffoldBackgroundColor,
+              theme.colorScheme.primaryContainer.withOpacity(0.08),
+              Colors.transparent,
             ],
-            stops: const [0.0, 0.35],
+            stops: const [0.0, 0.4],
           ),
         ),
       ),
