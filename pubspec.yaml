@@ -15,8 +15,23 @@ dependencies:
   fl_chart: ^0.68.0
   # 日期格式化
   intl: ^0.19.0
-  # 注意：本地数据库方案待用户选择后添加
-  # sqflite / hive / objectbox 等方案对比后将由用户决定
+  # Excel 文件生成（导出数据用）
+  excel: ^4.0.6
+  # 文件分享（导出后发送到微信/邮箱等）
+  share_plus: ^10.1.4
+  # 获取设备存储路径
+  path_provider: ^2.1.5
+  # 本地 SQLite 数据库
+  sqflite: ^2.4.1
+  path: ^1.9.0
+  # 文件选择器（导入数据用）
+  file_picker: ^8.1.6
+  # CSV 编码解码
+  csv: ^6.0.0
+  # 图片选择器（自定义背景）
+  image_picker: ^1.1.2
+  # 持久化存储用户偏好
+  shared_preferences: ^2.3.4
 
 dev_dependencies:
   flutter_test:

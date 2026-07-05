@@ -1,201 +1,246 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../data/app_state.dart';
+import '../data/preferences.dart';
 import 'add_expense_screen.dart';
 
-/// 首页 - 显示今日支出、快捷记账按钮、最近记录
+/// 首页 —— 今日收支、月度概览、快捷记账
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final todayTotal = appState.todayTotal;
-    final recentExpenses = appState.expenses.take(5).toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('小账本'),
-        backgroundColor: theme.colorScheme.primaryContainer,
-        foregroundColor: theme.colorScheme.onPrimaryContainer,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: ListenableBuilder(
-        listenable: appState,
+        listenable: appPrefs,
         builder: (context, _) {
-          final recent = appState.expenses.take(5).toList();
-          return SafeArea(
-            child: Column(
-              children: [
-                // 今日支出卡片
-                _buildTodayCard(theme),
-                // 记账按钮
-                _buildAddButton(theme),
-                // 最近记录
-                if (recent.isNotEmpty) ...[
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      children: [
-                        Icon(Icons.history,
-                            size: 20, color: theme.colorScheme.outline),
-                        const SizedBox(width: 8),
-                        Text('最近记录',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.outline)),
-                      ],
-                    ),
+          return ListenableBuilder(
+            listenable: appState,
+            builder: (context, _) {
+              final recent = appState.expenses.take(5).toList();
+              return Stack(
+                children: [
+                  // 背景图片层
+                  _buildBackground(theme),
+                  // 内容层
+                  SafeArea(
+                    child: Column(children: [
+                      if (recent.isEmpty && appState.expenses.isEmpty)
+                        Expanded(child: _buildEmptyState(theme))
+                      else
+                        Expanded(child: CustomScrollView(slivers: [
+                          SliverToBoxAdapter(child: _buildTodayCard(theme)),
+                          SliverToBoxAdapter(child: _buildMonthRow(theme)),
+                          SliverToBoxAdapter(child: _buildAddButton(theme)),
+                          if (recent.isNotEmpty) ...[
+                            SliverToBoxAdapter(child: _buildSectionTitle(theme)),
+                            SliverList(delegate: SliverChildBuilderDelegate(
+                              (context, i) => _buildItem(recent[i], theme),
+                              childCount: recent.length,
+                            )),
+                          ],
+                          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                        ])),
+                    ]),
                   ),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: recent.length,
-                      itemBuilder: (context, index) {
-                        final expense = recent[index];
-                        return _buildExpenseItem(expense, theme);
-                      },
-                    ),
-                  ),
-                ] else
-                  // 空状态
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.receipt_long_outlined,
-                              size: 64, color: theme.colorScheme.outlineVariant),
-                          const SizedBox(height: 16),
-                          Text('还没有记录',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.colorScheme.outline)),
-                          const SizedBox(height: 8),
-                          Text('点击下方按钮开始记账吧',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.outlineVariant)),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+                ],
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildTodayCard(ThemeData theme) {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Text('今日支出',
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.outline)),
-            const SizedBox(height: 8),
-            Text(
-              NumberFormat.currency(symbol: '¥', decimalDigits: 2)
-                  .format(appState.todayTotal),
-              style: theme.textTheme.headlineLarge?.copyWith(
-                color: appState.todayTotal > 0
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.onSurface,
-                fontWeight: FontWeight.bold,
-                fontSize: 36,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '本月累计 ${NumberFormat.currency(symbol: '¥', decimalDigits: 2).format(appState.thisMonthTotal)}',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.outline),
-            ),
-          ],
+  // ---- 背景 ----
+  Widget _buildBackground(ThemeData theme) {
+    final bgPath = appPrefs.bgImagePath;
+    if (bgPath != null && File(bgPath).existsSync()) {
+      return Positioned.fill(
+        child: Opacity(
+          opacity: 0.06,
+          child: Image.file(File(bgPath), fit: BoxFit.cover),
+        ),
+      );
+    }
+    // 默认渐变背景
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primaryContainer.withOpacity(0.15),
+              theme.scaffoldBackgroundColor,
+            ],
+            stops: const [0.0, 0.35],
+          ),
         ),
       ),
     );
   }
 
+  // ---- 空状态 ----
+  Widget _buildEmptyState(ThemeData theme) {
+    return Center(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Container(
+          width: 80, height: 80,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.receipt_long_outlined, size: 36, color: theme.colorScheme.primary.withOpacity(0.6)),
+        ),
+        const SizedBox(height: 20),
+        Text('开始记账吧', style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.outline)),
+        const SizedBox(height: 8),
+        Text('点击下方按钮记录第一笔', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outlineVariant)),
+        const SizedBox(height: 32),
+        _buildAddButton(theme),
+      ]),
+    );
+  }
+
+  // ---- 今日收支 ----
+  Widget _buildTodayCard(ThemeData theme) {
+    final fmt = (double v) => NumberFormat.currency(symbol: '¥', decimalDigits: 2).format(v);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 22),
+          child: Row(children: [
+            Expanded(child: _statCol(theme, '今日支出', fmt(appState.todayExpenseTotal), theme.colorScheme.error)),
+            Container(width: 1, height: 36, color: Colors.grey.shade200),
+            Expanded(child: _statCol(theme, '今日收入', fmt(appState.todayIncomeTotal), Colors.green)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _statCol(ThemeData theme, String label, String value, Color color) {
+    return Column(children: [
+      Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline)),
+      const SizedBox(height: 6),
+      Text(value, style: theme.textTheme.titleLarge?.copyWith(color: color, fontWeight: FontWeight.w700)),
+    ]);
+  }
+
+  // ---- 月度概览 ----
+  Widget _buildMonthRow(ThemeData theme) {
+    final fmt = (double v) => NumberFormat.currency(symbol: '¥', decimalDigits: 0).format(v);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(children: [
+        _miniBadge(theme, '本月支出', fmt(appState.thisMonthExpenseTotal), theme.colorScheme.error),
+        const SizedBox(width: 10),
+        _miniBadge(theme, '本月收入', fmt(appState.thisMonthIncomeTotal), Colors.green),
+        const SizedBox(width: 10),
+        _miniBadge(theme, '结余', fmt(appState.thisMonthBalance), appState.thisMonthBalance >= 0 ? Colors.green : theme.colorScheme.error),
+      ]),
+    );
+  }
+
+  Widget _miniBadge(ThemeData theme, String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(children: [
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline)),
+          const SizedBox(height: 4),
+          Text(value, style: theme.textTheme.titleSmall?.copyWith(color: color, fontWeight: FontWeight.w700)),
+        ]),
+      ),
+    );
+  }
+
+  // ---- 记账按钮 ----
   Widget _buildAddButton(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: SizedBox(
-        width: double.infinity,
-        height: 56,
+        height: 50,
         child: FilledButton.icon(
           onPressed: () async {
-            final result = await Navigator.push<Map<String, dynamic>>(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddExpenseScreen(),
-              ),
-            );
-            if (result != null && mounted) {
-              // 从返回数据创建Expense并添加
-              final expense = _createExpenseFromResult(result);
-              appState.addExpense(expense);
-            }
+            final r = await Navigator.push<Map<String, dynamic>>(context, MaterialPageRoute(builder: (_) => const AddExpenseScreen()));
+            if (r != null && mounted) await appState.addExpense(r['expense']);
           },
-          icon: const Icon(Icons.add_circle_outline, size: 28),
-          label: const Text('记一笔', style: TextStyle(fontSize: 18)),
+          icon: const Icon(Icons.add_rounded, size: 24),
+          label: const Text('记一笔', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
           style: FilledButton.styleFrom(
             backgroundColor: theme.colorScheme.primary,
             foregroundColor: theme.colorScheme.onPrimary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 0,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildExpenseItem(expense, ThemeData theme) {
+  Widget _buildSectionTitle(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Text('最近记录', style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.outline)),
+    );
+  }
+
+  // ---- 记录项 ----
+  Widget _buildItem(expense, ThemeData theme) {
+    final isExpense = expense.type == 'expense';
+    final c = isExpense ? theme.colorScheme.error : Colors.green;
     final dateStr = DateFormat('MM/dd HH:mm').format(expense.date);
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: theme.colorScheme.primaryContainer,
-          child: Icon(Icons.shopping_bag_outlined,
-              color: theme.colorScheme.onPrimaryContainer, size: 20),
-        ),
-        title: Text(
-          '${expense.majorCategory} · ${expense.minorCategory}',
-          style: theme.textTheme.bodyLarge,
-        ),
-        subtitle: Text(
-          dateStr,
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colorScheme.outline),
-        ),
-        trailing: Text(
-          NumberFormat.currency(symbol: '¥', decimalDigits: 2)
-              .format(expense.amount),
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.colorScheme.error,
-            fontWeight: FontWeight.w600,
-          ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          final r = await Navigator.push<Map<String, dynamic>>(context, MaterialPageRoute(builder: (_) => AddExpenseScreen(existingExpense: expense)));
+          if (r != null && mounted) {
+            final u = r['expense']; final idx = appState.expenses.indexOf(expense);
+            if (idx >= 0) await appState.updateExpense(idx, u);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(children: [
+            Container(width: 40, height: 40,
+              decoration: BoxDecoration(color: c.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
+              child: Icon(isExpense ? Icons.trending_down : Icons.trending_up, color: c, size: 18)),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('${expense.majorCategory} · ${expense.minorCategory}', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+              const SizedBox(height: 2),
+              Row(children: [
+                Text(dateStr, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline)),
+                const SizedBox(width: 6),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1), decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(3)), child: Text(expense.paymentMethod, style: const TextStyle(fontSize: 10, color: Colors.grey))),
+              ]),
+            ])),
+            Text('${isExpense ? "-" : "+"}¥${expense.amount.toStringAsFixed(2)}', style: theme.textTheme.titleSmall?.copyWith(color: c, fontWeight: FontWeight.w700)),
+          ]),
         ),
       ),
     );
-  }
-
-  /// 从AddExpenseScreen返回的数据创建Expense对象
-  dynamic _createExpenseFromResult(Map<String, dynamic> result) {
-    // 构建Expense对象
-    final majorCategory = result['majorCategory'] as String;
-    // 使用默认小分类的第一个作为默认值...
-    // 这里由AddExpenseScreen负责完整构建
-    return result['expense'];
   }
 }
