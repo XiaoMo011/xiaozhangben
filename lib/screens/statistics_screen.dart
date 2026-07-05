@@ -77,6 +77,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('统计'),
         backgroundColor: Colors.transparent,
